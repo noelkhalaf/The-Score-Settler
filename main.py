@@ -1,7 +1,19 @@
-from ast import alias
+import os
 import discord
 from discord.ext import commands
 from Randomizer import Randomizer
+from dotenv import load_dotenv
+load_dotenv()
+from flask import Flask
+from threading import Thread
+
+app=Flask("")
+
+@app.route("/")
+def index():
+    return "<h1>Bot is running</h1>"
+
+Thread(target=app.run,args=("0.0.0.0",8080)).start()
 
 aliases_dict = {
     'coin' : ['flip','toss','flick'],
@@ -17,12 +29,12 @@ randomizer = Randomizer()
 
 @client.event
 async def on_ready():
-  print('Bot is ready.')
+    print('Bot is ready.')
 
 @client.event
 async def on_command_error(ctx, error):
-  if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-    await commands(ctx)
+    if isinstance(error, discord.ext.commands.errors.CommandNotFound):
+        await commands(ctx)
 
 @client.command()
 async def commands(ctx):
@@ -58,17 +70,21 @@ async def card(ctx):
     await randomizer.card(ctx)
 
 @client.command(aliases=aliases_dict['range'])
-async def range(ctx, *, args):
-    range = [int(i) for i in args.split()]
-    if len(range) == 2:
-        if range[0] == range[1]:
-            await ctx.send("```ini\nYou got {}!\n```".format(range[0]))       
-        elif range[0] > range[1]:
-            await randomizer.range(ctx, range[1], range[0])
-        else:
-            await randomizer.range(ctx, range[0], range[1])
+async def range(ctx, *args):
+    if len(args) != 2:
+        await ctx.send("```ini\nType two integers to define the range of integers (inclusive) to randomize a number from '.range <low> <high>'.\n```")
+        return
+    try:
+        range = [int(float(i)) for i in args]
+    except ValueError:
+        await ctx.send("```ini\nType the range using only integers (inclusive) to randomize a number from '.range <low> <high>'.\n```")
+        return
+    if range[0] == range[1]:
+        await ctx.send("```ini\nYou got {}!\n```".format(range[0]))       
+    elif range[0] > range[1]:
+        await randomizer.range(ctx, range[1], range[0])
     else:
-        await ctx.send("```ini\nType the range of integers (inclusive) to randomize a number from '.range <low> <high>'.\n```")
+        await randomizer.range(ctx, range[0], range[1])
 @range.error
 async def range_error(ctx, error):
 	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
@@ -98,9 +114,7 @@ async def aliases_error(ctx, error):
 	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
 		await ctx.send("```ini\nSpecify a command to view its aliases '.aliases <command>'.\n```")
 
-
-client.run('OTY5NzI2MzA1MzQ2MTM4MTYy.Ymxl_w.V90kDA_3hntiIrPcyjRkjezPz4k')
-
+client.run(os.environ['TOKEN'])
 
 """
 .flip                                   *
