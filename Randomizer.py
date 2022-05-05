@@ -112,7 +112,7 @@ class Randomizer:
         if await self.isFileEmpty(ctx, newentries): return
         newentries.sort()
         self.replaceEntries(ctx, newentries)
-        await ctx.send("```ini\nEntries in Entries sorted successfully!\n```")
+        await ctx.send("```ini\nEntries sorted successfully!\n```")
 
     async def cleanfile(self, ctx):
         """
@@ -155,7 +155,7 @@ class Randomizer:
             newentries = entries
             entries = [entry[:-1].lower() for entry in entries]
             for arg in args:
-                if arg not in entries:
+                if arg.lower() not in entries:
                     await ctx.send("```ini\nEntry [{}] is not in the list of Entries\n```".format(arg))
                     continue
                 count = 0
