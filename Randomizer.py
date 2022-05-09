@@ -10,49 +10,52 @@ class Randomizer:
     dieValues = ('1', '2', '3', '4', '5', '6')
     coinValues = ('Heads', 'Tails')
     
-    async def coin(self, ctx):
+    async def coin(self, ctx, gifson):
         """
         flips a coin
         """
         result = self.getRandomCoin(ctx)
-        if result == 'Heads':
-            await ctx.send(file=discord.File('images/HeadsFlip.gif'))
-        else:
-            await ctx.send(file=discord.File('images/TailsFlip.gif'))
-        time.sleep(6)
+        if gifson:
+            if result == 'Heads':
+                await ctx.send(file=discord.File('images/HeadsFlip.gif'))
+            else:
+                await ctx.send(file=discord.File('images/TailsFlip.gif'))
+            time.sleep(6)
         await ctx.send("```ini\nYou flipped [{}]!\n```".format(result))
 
-    async def coinChoices(self, ctx, choices):
+    async def coinChoices(self, ctx, choices, gifson):
         """
         flips a coin with choices
         :param args: coin flip choices
         """
         result = self.getRandomChoice(ctx, choices)
-        if result == choices[0]:
-            await ctx.send(file=discord.File('images/HeadsFlip.gif'))
-        else:
-            await ctx.send(file=discord.File('images/TailsFlip.gif'))
-        time.sleep(6)
+        if gifson:
+            if result == choices[0]:
+                await ctx.send(file=discord.File('images/HeadsFlip.gif'))
+            else:
+                await ctx.send(file=discord.File('images/TailsFlip.gif'))
+            time.sleep(6)
         await ctx.send("```ini\nYou flipped [{}]!\n```".format(result))
 
-    async def die(self, ctx):
+    async def die(self, ctx, gifson):
         """
         rolls a die
         """
         result = self.getRandomDie(ctx)
-        if result == '1':
-            await ctx.send(file=discord.File('images/dice-1.gif'))
-        elif result == '2':
-            await ctx.send(file=discord.File('images/dice-2.gif'))
-        elif result == '3':
-            await ctx.send(file=discord.File('images/dice-3.gif'))
-        elif result == '4':
-            await ctx.send(file=discord.File('images/dice-4.gif'))
-        elif result == '5':
-            await ctx.send(file=discord.File('images/dice-5.gif'))
-        elif result == '6':
-            await ctx.send(file=discord.File('images/dice-6.gif'))
-        time.sleep(8)
+        if gifson:
+            if result == '1':
+                await ctx.send(file=discord.File('images/dice-1.gif'))
+            elif result == '2':
+                await ctx.send(file=discord.File('images/dice-2.gif'))
+            elif result == '3':
+                await ctx.send(file=discord.File('images/dice-3.gif'))
+            elif result == '4':
+                await ctx.send(file=discord.File('images/dice-4.gif'))
+            elif result == '5':
+                await ctx.send(file=discord.File('images/dice-5.gif'))
+            elif result == '6':
+                await ctx.send(file=discord.File('images/dice-6.gif'))
+            time.sleep(8)
         await ctx.send("```ini\nYou rolled a [{}]!\n```".format(result))
 
     async def card(self, ctx):
@@ -95,12 +98,12 @@ class Randomizer:
         await ctx.send("```ini\nHere is the text file with the entries:\n```")
         await ctx.send(file=discord.File('textfiles/entries.txt'))
 
-    #async def setfile(self, ctx):
+    async def setfile(self, ctx, file):
         """
         replaces entries in entries.txt file with new file
-        """ 
-        #await ctx.send("```ini\nHere is the text file with the entries:\n```")
-        #await ctx.send(file=discord.File('entries.txt'))
+        """
+        await file.save("textfiles/entries.txt")
+        await ctx.send("```ini\nEntries updated successfully!\n```")
 
     async def sortfile(self, ctx):
         """

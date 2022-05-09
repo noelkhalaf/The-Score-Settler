@@ -1,3 +1,4 @@
+import asyncio
 import os
 import discord
 from discord.ext import commands
@@ -29,8 +30,12 @@ aliases_dict = {
     'cleanfile' : ['clean', 'filterfile', 'filter', 'duplicates', 'dup', 'dups', 'removeduplicates'],
     'addentries' : ['add', 'addentry', 'newentries'],
     'removeentries' : ['remove', 'removeentry'],
+    'gifson' : ['gifon'],
+    'gifsoff' : ['gifoff'],
     'aliases' : ['alias'],
 }
+
+gifson = True
 
 client = commands.Bot(command_prefix = '.')
 client.remove_command('help')
@@ -43,7 +48,7 @@ async def on_ready():
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-        await commands(ctx)
+        await ctx.send("```bash\n.'{}' could not be recognized. Use '.commands' to view the list of avaiable commands.\n```".format(ctx.invoked_with))
 
 @client.command()
 async def commands(ctx):
@@ -63,24 +68,26 @@ The Score Settler commands:\n\
 \'.cleanfile\' = Removes duplicates and empty lines from the list of Entries.\n\
 \'.addentries \"<thing1>\" \"<thing2>\" ...\' = Adds entries to the list of Entries.\n\
 \'.removeentries \"<thing1>\" \"<thing2>\" ...\' = Removes entries from the list of Entries.\n\
+\'.gifson\' = Enables gifs for all commands.\
+\'.gifsoff\' = Disables gifs for all commands.\
 \'.aliases <command>\' = Shows the different aliases relating to specific commands.\
 ```')
 
 @client.command(aliases=aliases_dict['coin'])
 async def coin(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("\"(['*\w\s]+)\"|(\w+)", args)]
     if len(choices) == 2:
-        await randomizer.coinChoices(ctx, choices)
+        await randomizer.coinChoices(ctx, choices, gifson)
     else:
-        await ctx.send("```bash\nYou can either do '.flip' or '.flip \"<this>\" \"<that>\"'.\n```")
+        await ctx.send("```bash\nYou can either use '.flip' or '.flip \"<this>\" \"<that>\"'.\n```")
 @coin.error
 async def coin_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-        await randomizer.coin(ctx)
+        await randomizer.coin(ctx, gifson)
 
 @client.command(aliases=aliases_dict['die'])
 async def die(ctx):
-    await randomizer.die(ctx)
+    await randomizer.die(ctx, gifson)
 
 @client.command(aliases=aliases_dict['card'])
 async def card(ctx):
@@ -97,7 +104,7 @@ async def range(ctx, *args):
         await ctx.send("```bash\nType the range using only integers (inclusive) to randomize a number from '.range <low> <high>'.\n```")
         return
     if range[0] == range[1]:
-        await ctx.send("```ini\nYou got [{}]!\n```".format(range[0]))       
+        await ctx.send("```ini\nYou got [{}]!\n```".format(range[0]))
     elif range[0] > range[1]:
         await randomizer.range(ctx, range[1], range[0])
     else:
@@ -109,7 +116,7 @@ async def range_error(ctx, error):
 
 @client.command(aliases=aliases_dict['list'])
 async def list(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("\"(['*\w\s]+)\"|(\w+)", args)]
     await randomizer.list(ctx, choices)
 @list.error
 async def list_error(ctx, error):
@@ -135,11 +142,38 @@ async def entries_error(ctx, error):
 @client.command(aliases=aliases_dict['getfile'])
 async def getfile(ctx):
     await randomizer.getfile(ctx)
-"""
+
 @client.command(aliases=aliases_dict['setfile'])
-async def setfile(ctx, arg):
-    await randomizer.setfile(ctx, arg)
-"""
+async def setfile(ctx):
+    try:
+        file = ctx.message.attachments[0]
+    except:
+        await ctx.send("```bash\nNo file attached. Attach the file of Entries using '.setfile <file.txt>'.\n```")
+        return
+    if file.filename[-4:] != ".txt":
+        await ctx.send("```bash\nAttach a text file of Entries using '.setfile <file.txt>'.\n```")
+        return
+    await ctx.send("```bash\nAre you sure you would like to replace the current list of Entries with '{}'?\n```".format(file.filename))
+
+    confirming = True
+    while confirming:
+        await ctx.send("```ini\nEnter either [yes] or [no]\n```")
+        try:
+            reply = await client.wait_for('message', timeout=30.0)
+            msg = reply.content.lower()
+        except asyncio.TimeoutError:
+            await ctx.send("```bash\nTimed out. Use '.setfile <file.txt>' to try again.\n```")
+            return
+        if msg == 'y' or msg == 'yes' or msg == 'yep' or msg == 'yeah' or msg == 'ye':
+            confirming = False
+            await randomizer.setfile(ctx, file)
+        elif msg == 'n' or msg == 'no' or msg == 'nope' or msg == 'nah':
+            confirming = False
+            await ctx.send("```bash\nList of entries not modified.\n```")
+            return
+        else:
+            await ctx.send("```bash\n'{}' is not an accepted response.\n```".format(msg))
+
 @client.command(aliases=aliases_dict['sortfile'])
 async def sortfile(ctx):
     await randomizer.sortfile(ctx)
@@ -150,7 +184,7 @@ async def cleanfile(ctx):
 
 @client.command(aliases=aliases_dict['addentries'])
 async def addentries(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("\"(['*\w\s]+)\"|(\w+)", args)]
     await randomizer.addentries(ctx, choices)
 @addentries.error
 async def addentry_error(ctx, error):
@@ -159,12 +193,24 @@ async def addentry_error(ctx, error):
 
 @client.command(aliases=aliases_dict['removeentries'])
 async def removeentries(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("\"(['*\w\s]+)\"|(\w+)", args)]
     await randomizer.removeentries(ctx, choices)
 @removeentries.error
 async def removeentry_error(ctx, error):
 	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
 		await ctx.send("```bash\nType the entries you would like to remove from the list of Entries'.removeentries \"<entry1>\" \"<entry2>\" ...'.\n```")
+
+@client.command(aliases=aliases_dict['gifson'])
+async def gifson(ctx):
+    global gifson
+    gifson = True
+    await ctx.send("```bash\nGifs enabled successfully!\n```")
+
+@client.command(aliases=aliases_dict['gifsoff'])
+async def gifsoff(ctx):
+    global gifson
+    gifson = False
+    await ctx.send("```bash\nGifs disabled successfully!\n```")
 
 @client.command(aliases=aliases_dict['aliases'])
 async def aliases(ctx, command):
