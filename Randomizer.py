@@ -113,7 +113,7 @@ class Randomizer:
             entries = f.readlines()
         newentries = [entry+"\n" if entry[-1] !="\n" else entry for entry in entries if entry != "\n"]
         if await self.isFileEmpty(ctx, newentries): return
-        newentries.sort()
+        newentries.sort(key=str.lower)
         self.replaceEntries(ctx, newentries)
         await ctx.send("```ini\nEntries sorted successfully!\n```")
 
@@ -123,12 +123,15 @@ class Randomizer:
         """
         with open("textfiles/entries.txt", "r+") as f:
             entries = f.readlines()
-        entries = [entry for entry in entries if entry != "\n"]
+        entries = [entry+"\n" if entry[-1] !="\n" else entry for entry in entries if entry != "\n"]
         if await self.isFileEmpty(ctx, entries): return
         newentries = list(dict.fromkeys(entries))
         self.replaceEntries(ctx, newentries)
         numdups = len(entries) - len(newentries)
-        await ctx.send("```ini\n[{}] duplicates in Entries removed successfully!\n```".format(numdups))
+        if numdups == 0:
+            await ctx.send("```ini\nNo duplicates in Entries to remove.\n```")
+        else:
+            await ctx.send("```ini\n[{}] duplicates in Entries removed successfully!\n```".format(numdups))
 
     async def addentries(self, ctx, args):
         """

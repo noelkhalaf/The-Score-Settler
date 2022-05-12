@@ -18,6 +18,7 @@ def index():
 Thread(target=app.run,args=("0.0.0.0",8080)).start()
 """
 aliases_dict = {
+    'commands' : ['command', 'help', 'info'],
     'coin' : ['flip','toss','flick'],
     'die' : ['dice','roll'],
     'card' : ['deck','draw'],
@@ -48,9 +49,9 @@ async def on_ready():
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-        await ctx.send("```bash\n.'{}' could not be recognized. Use '.commands' to view the list of avaiable commands.\n```".format(ctx.invoked_with))
+        await ctx.send("```bash\n'.{}' could not be recognized. Use '.commands' to view the list of avaiable commands.\n```".format(ctx.invoked_with))
 
-@client.command()
+@client.command(aliases=aliases_dict['commands'])
 async def commands(ctx):
   await ctx.send('```bash\n\
 The Score Settler commands:\n\
@@ -68,8 +69,8 @@ The Score Settler commands:\n\
 \'.cleanfile\' = Removes duplicates and empty lines from the list of Entries.\n\
 \'.addentries \"<thing1>\" \"<thing2>\" ...\' = Adds entries to the list of Entries.\n\
 \'.removeentries \"<thing1>\" \"<thing2>\" ...\' = Removes entries from the list of Entries.\n\
-\'.gifson\' = Enables gifs for all commands.\
-\'.gifsoff\' = Disables gifs for all commands.\
+\'.gifson\' = Enables all gifs.\n\
+\'.gifsoff\' = Disables all gifs.\n\
 \'.aliases <command>\' = Shows the different aliases relating to specific commands.\
 ```')
 
