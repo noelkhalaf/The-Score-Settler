@@ -76,7 +76,7 @@ The Score Settler commands:\n\
 
 @client.command(aliases=aliases_dict['coin'])
 async def coin(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"(['*\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
     if len(choices) == 2:
         await randomizer.coinChoices(ctx, choices, gifson)
     else:
@@ -117,7 +117,7 @@ async def range_error(ctx, error):
 
 @client.command(aliases=aliases_dict['list'])
 async def list(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"(['*\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
     await randomizer.list(ctx, choices)
 @list.error
 async def list_error(ctx, error):
@@ -185,7 +185,7 @@ async def cleanfile(ctx):
 
 @client.command(aliases=aliases_dict['addentries'])
 async def addentries(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"(['*\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
     await randomizer.addentries(ctx, choices)
 @addentries.error
 async def addentry_error(ctx, error):
@@ -194,7 +194,7 @@ async def addentry_error(ctx, error):
 
 @client.command(aliases=aliases_dict['removeentries'])
 async def removeentries(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"(['*\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
     await randomizer.removeentries(ctx, choices)
 @removeentries.error
 async def removeentry_error(ctx, error):
