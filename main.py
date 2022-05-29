@@ -76,7 +76,7 @@ The Score Settler commands:\n\
 
 @client.command(aliases=aliases_dict['coin'])
 async def coin(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall("[\"“]([='*\w\s]+)[\"”]|(\w+)[\"”]", args)]
     if len(choices) == 2:
         await randomizer.coinChoices(ctx, choices, gifson)
     else:
