@@ -79,6 +79,10 @@ async def coin(ctx, *, args):
     choices = [a if b == '' else b for (a,b) in re.findall("[\"\“]([\)\(\}\{\=\'*\w\s]+)[\"\”]", args)]
     if len(choices) == 2:
         await randomizer.coinChoices(ctx, choices, gifson)
+        return
+    choices = args.split()
+    if len(choices) == 2:
+        await randomizer.coinChoices(ctx, choices, gifson)
     else:
         await ctx.send("```bash\nYou can either use '.flip' or '.flip \"<this>\" \"<that>\"'.\n```")
 @coin.error
