@@ -19,7 +19,7 @@ Thread(target=app.run,args=("0.0.0.0",8080)).start()
 """
 aliases_dict = {
     'commands' : ['command', 'help', 'info'],
-    'coin' : ['flip','toss','flick'],
+    'coin' : ['flip','toss','flick','Bern','Bernoulli','bern','bernoulli'],
     'die' : ['dice','roll'],
     'card' : ['deck','draw'],
     'range' : ['num','number','from'],
