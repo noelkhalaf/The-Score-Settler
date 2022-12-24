@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 import random
 import discord
@@ -90,6 +91,13 @@ class Randomizer:
         entries_names = [entry[:-1] if entry[-1:] == "\n" else entry for entry in entries]
         for i in range(num):
             await ctx.send("```ini\nYou got [{}]!\n```".format(self.getRandomChoice(ctx, entries_names)))
+
+    async def resetfile(self, ctx):
+        """
+        replaces the entries.txt file contents with contents of entries_original.txt
+        """ 
+        shutil.copy2("./textfiles/entries_original.txt","./textfiles/entries.txt")
+        await ctx.send("```ini\nEntries reset successfully!\n```")
 
     async def getfile(self, ctx):
         """

@@ -25,6 +25,7 @@ aliases_dict = {
     'range' : ['num','number','from'],
     'list' : ['options'],
     'entries' : ['entry','prompt'],
+    'resetfile' : ['reset'],
     'getfile' : ['file'],
     'setfile' : ['newfile', 'changefile'],
     'sortfile' : ['alpha', 'alphabetical', 'sort', 'arrange', 'orderfile', 'order'],
@@ -63,6 +64,7 @@ The Score Settler commands:\n\
 \'.list \"<thing1>\" \"<thing2>\" ...\' = Chooses at random from a list of options.\n\
 \'.entries\' = Returns a random entry from the list of Entries.\n\
 \'.entries <number>\' = Returns a specific number of random entries from the list of Entries.\n\
+\'.resetfile\' = Resets the list of Entries to its original contents.\n\
 \'.getfile\' = Returns the list of Entries as a text file attachment.\n\
 \'.setfile <file.txt>\' = Sets the new list of Entries from the text file attachment.\n\
 \'.sortfile\' = Sorts the list of Entries alphabetically.\n\
@@ -143,6 +145,10 @@ async def entries(ctx, arg):
 async def entries_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
         await randomizer.entries(ctx, 1)
+
+@client.command(aliases=aliases_dict['resetfile'])
+async def resetfile(ctx):
+    await randomizer.resetfile(ctx)
 
 @client.command(aliases=aliases_dict['getfile'])
 async def getfile(ctx):
