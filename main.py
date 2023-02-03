@@ -98,7 +98,7 @@ async def die(ctx):
 
 @client.command(aliases=aliases_dict['card'])
 async def card(ctx):
-    await randomizer.card(ctx)
+    await randomizer.card(ctx, gifson)
 
 @client.command(aliases=aliases_dict['range'])
 async def range(ctx, *args):

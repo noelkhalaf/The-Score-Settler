@@ -6,21 +6,27 @@ import discord
 from discord.ext import commands
 
 class Randomizer:
-    suits = ('♠', '♥', '♦', '♣')
-    cards = ('A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K')
-    dieValues = ('1', '2', '3', '4', '5', '6')
+    cardSuits = {
+        "♠" : "spade",
+        "♥" : "heart",
+        "♦" : "diamond",
+        "♣" : "club",
+    }
+    cardValues = {
+        "1" : "A",
+        "11" : "J",
+        "12" : "Q",
+        "13" : "K",
+    }
     coinValues = ('Heads', 'Tails')
-    
+
     async def coin(self, ctx, gifson):
         """
         flips a coin
         """
         result = self.getRandomCoin(ctx)
         if gifson:
-            if result == 'Heads':
-                await ctx.send(file=discord.File('images/HeadsFlip.gif'))
-            else:
-                await ctx.send(file=discord.File('images/TailsFlip.gif'))
+            await ctx.send(file=discord.File('images/coin-animation-gifs/{}Flip.gif'.format(result)))
             time.sleep(6)
         await ctx.send("```ini\nYou flipped [{}]!\n```".format(result))
 
@@ -32,9 +38,9 @@ class Randomizer:
         result = self.getRandomChoice(ctx, choices)
         if gifson:
             if result == choices[0]:
-                await ctx.send(file=discord.File('images/HeadsFlip.gif'))
+                await ctx.send(file=discord.File('images/coin-animation-gifs/HeadsFlip.gif'))
             else:
-                await ctx.send(file=discord.File('images/TailsFlip.gif'))
+                await ctx.send(file=discord.File('images/coin-animation-gifs/TailsFlip.gif'))
             time.sleep(6)
         await ctx.send("```ini\nYou flipped [{}]!\n```".format(result))
 
@@ -44,26 +50,21 @@ class Randomizer:
         """
         result = self.getRandomDie(ctx)
         if gifson:
-            if result == '1':
-                await ctx.send(file=discord.File('images/dice-1.gif'))
-            elif result == '2':
-                await ctx.send(file=discord.File('images/dice-2.gif'))
-            elif result == '3':
-                await ctx.send(file=discord.File('images/dice-3.gif'))
-            elif result == '4':
-                await ctx.send(file=discord.File('images/dice-4.gif'))
-            elif result == '5':
-                await ctx.send(file=discord.File('images/dice-5.gif'))
-            elif result == '6':
-                await ctx.send(file=discord.File('images/dice-6.gif'))
+            await ctx.send(file=discord.File('images/dice-animation-gifs/dice-{}.gif'.format(result)))
             time.sleep(8)
         await ctx.send("```ini\nYou rolled a [{}]!\n```".format(result))
 
-    async def card(self, ctx):
+    async def card(self, ctx, gifson):
         """
         draws a card
         """
-        await ctx.send("```ini\nYou drew a [{}]!\n```".format(self.getRandomCard(ctx)))
+        value, suit = self.getRandomCard(ctx)
+        value_royals = self.cardValues.get(value, value)
+        suit_name = self.cardSuits[suit]
+        if gifson:
+            await ctx.send(file=discord.File('images/card-animation-gifs/{}/{}-{}.gif'.format(suit_name,value,suit_name)))
+            time.sleep(6)
+        await ctx.send("```ini\nYou drew a [{}{}]!\n```".format(value_royals, suit))
 
     async def range(self, ctx, low, high):
         """
@@ -188,10 +189,10 @@ class Randomizer:
         return random.choice(choices)
 
     def getRandomDie(self, ctx):
-        return random.choice(self.dieValues)
+        return str(random.randrange(1,6))
 
     def getRandomCard(self, ctx):
-        return random.choice(self.cards) + random.choice(self.suits)
+        return str(random.randrange(1,13)), random.choice(list(self.cardSuits))
 
     def getRandomRange(self, ctx, arg1, arg2):
         return random.randrange(arg1, arg2)
