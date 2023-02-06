@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 621.96 621.96">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #007b63;
+      }
+
+      .cls-2 {
+        fill: #f2c438;
+      }
+
+      .cls-3 {
+        fill: #191c2d;
+      }
+
+      .cls-4 {
+        clip-path: url(#clippath);
+      }
+
+      .cls-5 {
+        fill: none;
+      }
+
+      .cls-6 {
+        fill: #f2a533;
+      }
+    </style>
+    <clipPath id="clippath">
+      <path id="Eye-2" data-name="Eye" class="cls-5" d="m148.85,371.72l59.85-33.7,13.78,47.22c-26.07,5.56-73.63-13.52-73.63-13.52Z"/>
+    </clipPath>
+  </defs>
+  <g>
+    <polygon class="cls-6" points="475.32 270.03 77.47 582.09 39.87 544.5 351.94 146.64 475.32 270.03"/>
+    <polygon class="cls-6" points="174.38 621.96 46.77 575.19 0 447.58 174.38 621.96"/>
+    <polygon class="cls-6" points="546.23 450.62 621.96 0 171.35 75.74 546.23 450.62"/>
+  </g>
+  <g>
+    <path id="Head" class="cls-1" d="m145.3,302.09c-59.33-5.91-77.71,63.87-42.67,113.36,35.04,49.49,94.22,92.85,124.05,78.39l28.42-136.09-48.46-35.08-14.54-26.34-46.8,5.76Z"/>
+    <path id="Eye" class="cls-2" d="m148.85,371.72l59.85-33.7,13.78,47.22c-26.07,5.56-73.63-13.52-73.63-13.52Z"/>
+    <g id="Pupil">
+      <g class="cls-4">
+        <ellipse id="Ball" class="cls-2" cx="187.36" cy="369.1" rx="8.95" ry="14.5" transform="translate(-206.12 240.59) rotate(-45)"/>
+      </g>
+    </g>
+    <path id="Jaw" class="cls-3" d="m222.76,328.58l5.35-10.47c153.48,102.86,89.55,212.93,21.27,188.94-61.58-20.45-94.9-53.78-110.28-69.16-15.38-15.38-22.85-38.67-3.11-37.91,19.74.76,40.25,21.27,51.71,20.07s32.78-17.45,32.78-17.45l-17.13-23.84,6.55-21.93,25.85,10.04,3.76-8.89-16.74-29.4Z"/>
+    <path id="Cone" class="cls-1" d="m135.96,420.52l15.46,34.68,11.72,9.9,12.85-28.47c-10.61-19.91-32.32-28.96-40.03-16.11Z"/>
+    <ellipse id="Ball-2" data-name="Ball" class="cls-2" cx="158.99" cy="464.12" rx="13.42" ry="21.75" transform="translate(-281.61 248.36) rotate(-45)"/>
+  </g>
+</svg>
