@@ -3,11 +3,13 @@ import os
 import discord
 from discord.ext import commands
 from Randomizer import Randomizer
+from UserEntries import UserEntries
 import re
 from dotenv import load_dotenv
 load_dotenv()
 from flask import Flask
 from threading import Thread
+
 """"
 app=Flask("")
 
@@ -17,31 +19,33 @@ def index():
 
 Thread(target=app.run,args=("0.0.0.0",8080)).start()
 """
+
+randomizer = Randomizer()
+userEntries = UserEntries()
+gifs = True
 aliases_dict = {
-    'commands' : ['command', 'help', 'info'],
-    'coin' : ['flip','toss','flick','Bern','Bernoulli','bern','bernoulli'],
+    'commands' : ['command', 'help', 'info', 'lost'],
+    'coin' : ['flip','toss','flick','bern','bernoulli'],
     'die' : ['dice','roll'],
     'card' : ['deck','draw'],
     'range' : ['num','number','from'],
     'list' : ['options'],
+    'new' : ['newfile', 'create', 'createfile', 'account'],
     'entries' : ['entry','prompt'],
-    'resetfile' : ['reset'],
-    'getfile' : ['file'],
-    'setfile' : ['newfile', 'changefile'],
+    'resetfile' : ['reset', 'takemeback', 'goodoldays'],
+    'getfile' : ['get', 'file', 'fetch', 'gimme', 'handitover'],
+    'setfile' : ['set', 'changefile'],
     'sortfile' : ['alpha', 'alphabetical', 'sort', 'arrange', 'orderfile', 'order'],
     'cleanfile' : ['clean', 'filterfile', 'filter', 'duplicates', 'dup', 'dups', 'removeduplicates'],
+    'clearfile' : ['clear', 'blank', 'canvas'],
     'addentries' : ['add', 'addentry', 'newentries'],
     'removeentries' : ['remove', 'removeentry'],
-    'gifson' : ['gifon'],
-    'gifsoff' : ['gifoff'],
+    'gifs' : ['togglegifs', 'gif'],
     'aliases' : ['alias'],
 }
 
-gifson = True
-
 client = commands.Bot(command_prefix = '.')
 client.remove_command('help')
-randomizer = Randomizer()
 
 @client.event
 async def on_ready():
@@ -50,31 +54,39 @@ async def on_ready():
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-        await ctx.send("```bash\n'.{}' could not be recognized. Use '.commands' to view the list of avaiable commands.\n```".format(ctx.invoked_with))
+        await ctx.send("```bash\n'.{}' could not be recognized. Use '.help' to view the list of available commands.\n```".format(ctx.invoked_with))
 
 @client.command(aliases=aliases_dict['commands'])
 async def commands(ctx):
   await ctx.send('```bash\n\
-The Score Settler commands:\n\
-\'.coin\' = Flips a two-sided coin.\n\
-\'.coin \"<this>\" \"<that>\"\' = Flips with what is at stake.\n\
-\'.die\' = Rolls a six-sided die.\n\
-\'.card\' = Draws a card from a 52-card deck.\n\
-\'.range <low> <high>\' = Randomizes a number between numbers low and high.\n\
-\'.list \"<thing1>\" \"<thing2>\" ...\' = Chooses at random from a list of options.\n\
-\'.entries\' = Returns a random entry from the list of Entries.\n\
-\'.entries <number>\' = Returns a specific number of random entries from the list of Entries.\n\
-\'.resetfile\' = Resets the list of Entries to its original contents.\n\
-\'.getfile\' = Returns the list of Entries as a text file attachment.\n\
-\'.setfile <file.txt>\' = Sets the new list of Entries from the text file attachment.\n\
-\'.sortfile\' = Sorts the list of Entries alphabetically.\n\
-\'.cleanfile\' = Removes duplicates and empty lines from the list of Entries.\n\
-\'.addentries \"<thing1>\" \"<thing2>\" ...\' = Adds entries to the list of Entries.\n\
-\'.removeentries \"<thing1>\" \"<thing2>\" ...\' = Removes entries from the list of Entries.\n\
-\'.gifson\' = Enables all gifs.\n\
-\'.gifsoff\' = Disables all gifs.\n\
-\'.aliases <command>\' = Shows the different aliases relating to specific commands.\
+                                            The Score Settler commands\n\
+Basics:\n\
+    \'.coin\' = Flips a two-sided coin.\n\
+    \'.coin \"<this>\" \"<that>\"\' = Flips with what is at stake.\n\
+    \'.die\' = Rolls a six-sided die.\n\
+    \'.card\' = Draws a card from a 52-card deck.\n\
+    \'.range <low> <high>\' = Randomizes a number between numbers low and high.\n\
+    \'.list \"<thing1>\" \"<thing2>\" ...\' = Chooses at random from a list of options.\n\
+Custom Entries:\n\
+    \'.new\' = Creates a new personal Entries file.\n\
+    \'.entries\' = Returns a random entry from the list of Entries.\n\
+    \'.entries <number>\' = Returns a specific number of random Entries from the list of Entries.\n\
+    \'.addentries \"<thing1>\" \"<thing2>\" ...\' = Adds Entries to the list of Entries.\n\
+    \'.removeentries \"<thing1>\" \"<thing2>\" ...\' = Removes Entries from the list of Entries.\n\
+    \'.getfile\' = Returns the list of Entries as a text file attachment.\n\
+    \'.setfile <file.txt>\' = Sets the new list of Entries from the text file attachment.\n\
+    \'.clearfile\' = Removes all Entries from the list of Entries.\n\
+    \'.resetfile\' = Resets the list of Entries to its original contents.\n\
+    \'.sortfile\' = Sorts the list of Entries alphabetically.\n\
+    \'.cleanfile\' = Removes duplicates and empty lines from the list of Entries.\n\
+Misc:\n\
+    \'.gifs\' = Toggles gifs.\n\
+    \'.aliases <command>\' = Shows the different aliases relating to specific commands.\
 ```')
+
+"""
+Basic Commands
+"""
 
 @client.command(aliases=aliases_dict['coin'])
 async def coin(ctx, *, args):
@@ -130,6 +142,14 @@ async def list_error(ctx, error):
 	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
 		await ctx.send("```bash\nType a list of possible randomization options to choose from '.list \"<thing1>\" \"<thing2>\" ...'.\n```")
 
+"""
+Custom Entries Commands
+"""
+
+@client.command(aliases=aliases_dict['new'])
+async def new(ctx):
+    await userEntries.createNewUser(ctx)
+
 @client.command(aliases=aliases_dict['entries'])
 async def entries(ctx, arg):
     try:
@@ -140,15 +160,30 @@ async def entries(ctx, arg):
     if num>10 or num<1:
         await ctx.send("```bash\nEnter a number of entries to randomize between 1 and 10 '.entries <number>'.\n```")
         return
-    await randomizer.entries(ctx, num)
+    await userEntries.entries(ctx, num)
 @entries.error
 async def entries_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-        await randomizer.entries(ctx, 1)
+        await userEntries.entries(ctx, 1)
 
-@client.command(aliases=aliases_dict['resetfile'])
-async def resetfile(ctx):
-    await randomizer.resetfile(ctx)
+@client.command(aliases=aliases_dict['addentries'])
+async def addentries(ctx, *, args):
+    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
+    await userEntries.addEntries(ctx, choices)
+@addentries.error
+async def addentry_error(ctx, error):
+	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+		await ctx.send("```bash\nType the entries you would like to add to the list of Entries '.addentries \"<entry1>\" \"<entry2>\" ...'.\n```")
+
+@client.command(aliases=aliases_dict['removeentries'])
+async def removeentries(ctx, *, args):
+    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
+    await randomizer.removeentries(ctx, choices)
+@removeentries.error
+async def removeentry_error(ctx, error):
+	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+		await ctx.send("```bash\nType the entries you would like to remove from the list of Entries'.removeentries \"<entry1>\" \"<entry2>\" ...'.\n```")
+
 
 @client.command(aliases=aliases_dict['getfile'])
 async def getfile(ctx):
@@ -177,13 +212,40 @@ async def setfile(ctx):
             return
         if msg == 'y' or msg == 'yes' or msg == 'yep' or msg == 'yeah' or msg == 'ye':
             confirming = False
-            await randomizer.setfile(ctx, file)
+            await userEntries.setfile(ctx, file)
         elif msg == 'n' or msg == 'no' or msg == 'nope' or msg == 'nah':
             confirming = False
             await ctx.send("```bash\nList of entries not modified.\n```")
             return
         else:
             await ctx.send("```bash\n'{}' is not an accepted response.\n```".format(msg))
+
+@client.command(aliases=aliases_dict['clearfile'])
+async def clearfile(ctx):
+        await ctx.send("```bash\nAre you sure you would like to remove all Entries from the list of Entries?\n```")
+        
+        confirming = True
+        while confirming:
+            await ctx.send("```ini\nEnter either [yes] or [no]\n```")
+            try:
+                reply = await client.wait_for('message', timeout=30.0)
+                msg = reply.content.lower()
+            except asyncio.TimeoutError:
+                await ctx.send("```bash\nTimed out. Use '.clearfile' to try again.\n```")
+                return
+            if msg == 'y' or msg == 'yes' or msg == 'yep' or msg == 'yeah' or msg == 'ye':
+                confirming = False
+                await userEntries.clearFile(ctx)
+            elif msg == 'n' or msg == 'no' or msg == 'nope' or msg == 'nah':
+                confirming = False
+                await ctx.send("```bash\nList of entries not modified.\n```")
+                return
+            else:
+                await ctx.send("```bash\n'{}' is not an accepted response.\n```".format(msg))
+
+@client.command(aliases=aliases_dict['resetfile'])
+async def resetfile(ctx):
+    await userEntries.resetfile(ctx)
 
 @client.command(aliases=aliases_dict['sortfile'])
 async def sortfile(ctx):
@@ -193,35 +255,18 @@ async def sortfile(ctx):
 async def cleanfile(ctx):
     await randomizer.cleanfile(ctx)
 
-@client.command(aliases=aliases_dict['addentries'])
-async def addentries(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
-    await randomizer.addentries(ctx, choices)
-@addentries.error
-async def addentry_error(ctx, error):
-	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-		await ctx.send("```bash\nType the entries you would like to add to the list of Entries '.addentries \"<entry1>\" \"<entry2>\" ...'.\n```")
+"""
+Misc Commands
+"""
 
-@client.command(aliases=aliases_dict['removeentries'])
-async def removeentries(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
-    await randomizer.removeentries(ctx, choices)
-@removeentries.error
-async def removeentry_error(ctx, error):
-	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-		await ctx.send("```bash\nType the entries you would like to remove from the list of Entries'.removeentries \"<entry1>\" \"<entry2>\" ...'.\n```")
-
-@client.command(aliases=aliases_dict['gifson'])
-async def gifson(ctx):
-    global gifson
-    gifson = True
-    await ctx.send("```bash\nGifs enabled successfully!\n```")
-
-@client.command(aliases=aliases_dict['gifsoff'])
-async def gifsoff(ctx):
-    global gifson
-    gifson = False
-    await ctx.send("```bash\nGifs disabled successfully!\n```")
+@client.command(aliases=aliases_dict['gifs'])
+async def gifs(ctx):
+    global gifs
+    gifs = not gifs
+    if gifs:
+        await ctx.send("```bash\nGifs enabled successfully!\n```")
+    else:
+        await ctx.send("```bash\nGifs disabled successfully!\n```")
 
 @client.command(aliases=aliases_dict['aliases'])
 async def aliases(ctx, command):
@@ -244,16 +289,5 @@ async def aliases_error(ctx, error):
 	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
 		await ctx.send("```bash\nEnter one of the possible commands to view its aliases '.aliases <command>'.\n```")
 
-client.run(os.environ['TOKEN'])
 
-"""
-.flip                                   *
-.flip <player1> <player2>               *
-.roll                                   *
-.roll <p1> <p2> <p3> <p4> <p5> <p6>
-.roll <p1=4,5,6> <p2=1:3>
-.range <high>
-.range <low> <high>                     *
-.range <low> <high> <exclusions>
-.randomize <string1> <string2> ....     *
-"""
+client.run(os.environ['TOKEN'])

@@ -5,3 +5,7 @@ __pycache__/
 .env
 
 textfiles/
+
+sql/
+
+testing.py
