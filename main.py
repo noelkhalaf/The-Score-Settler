@@ -92,25 +92,25 @@ Basic Commands
 async def coin(ctx, *, args):
     choices = re.findall(r"[\"\“]([\)\(\}\{\=\'\w\s]+)[\"\”]", args)
     if len(choices) == 2:
-        await randomizer.coinChoices(ctx, choices, gifson)
+        await randomizer.coinChoices(ctx, choices, gifs)
         return
     choices = args.split()
     if len(choices) == 2:
-        await randomizer.coinChoices(ctx, choices, gifson)
+        await randomizer.coinChoices(ctx, choices, gifs)
     else:
         await ctx.send("```bash\nYou can either use '.flip' or '.flip \"<this>\" \"<that>\"'.\n```")
 @coin.error
 async def coin_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-        await randomizer.coin(ctx, gifson)
+        await randomizer.coin(ctx, gifs)
 
 @client.command(aliases=aliases_dict['die'])
 async def die(ctx):
-    await randomizer.die(ctx, gifson)
+    await randomizer.die(ctx, gifs)
 
 @client.command(aliases=aliases_dict['card'])
 async def card(ctx):
-    await randomizer.card(ctx, gifson)
+    await randomizer.card(ctx, gifs)
 
 @client.command(aliases=aliases_dict['range'])
 async def range(ctx, *args):
