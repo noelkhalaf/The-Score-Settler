@@ -5,6 +5,7 @@ from discord.ext import commands
 from Randomizer import Randomizer
 from UserEntries import UserEntries
 import re
+import traceback
 from dotenv import load_dotenv
 load_dotenv()
 from flask import Flask
@@ -178,7 +179,7 @@ async def addentry_error(ctx, error):
 @client.command(aliases=aliases_dict['removeentries'])
 async def removeentries(ctx, *, args):
     choices = [a if b == '' else b for (a,b) in re.findall("\"([='*\w\s]+)\"|(\w+)", args)]
-    await randomizer.removeentries(ctx, choices)
+    await userEntries.removeEntries(ctx, choices)
 @removeentries.error
 async def removeentry_error(ctx, error):
 	if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
@@ -187,7 +188,7 @@ async def removeentry_error(ctx, error):
 
 @client.command(aliases=aliases_dict['getfile'])
 async def getfile(ctx):
-    await randomizer.getfile(ctx)
+    await userEntries.getFile(ctx)
 
 @client.command(aliases=aliases_dict['setfile'])
 async def setfile(ctx):
@@ -199,11 +200,12 @@ async def setfile(ctx):
     if file.filename[-4:] != ".txt":
         await ctx.send("```bash\nAttach a text file of Entries using '.setfile <file.txt>'.\n```")
         return
-    await ctx.send("```bash\nAre you sure you would like to replace the current list of Entries with '{}'?\n```".format(file.filename))
 
+    first_line = "Are you sure you would like to replace the current list of Entries with '{}'?\n".format(file.filename)
     confirming = True
     while confirming:
-        await ctx.send("```ini\nEnter either [yes] or [no]\n```")
+        await ctx.send("```ini\n{}Enter either [yes] or [no]\n```".format(first_line))
+        first_line = ""
         try:
             reply = await client.wait_for('message', timeout=30.0)
             msg = reply.content.lower()
@@ -212,21 +214,20 @@ async def setfile(ctx):
             return
         if msg == 'y' or msg == 'yes' or msg == 'yep' or msg == 'yeah' or msg == 'ye':
             confirming = False
-            await userEntries.setfile(ctx, file)
-        elif msg == 'n' or msg == 'no' or msg == 'nope' or msg == 'nah':
+            await userEntries.setFile(ctx, file)
+        elif msg == 'n' or msg == 'no' or msg == 'nope' or msg == 'nah' or msg == 'negatory':
             confirming = False
             await ctx.send("```bash\nList of entries not modified.\n```")
             return
         else:
-            await ctx.send("```bash\n'{}' is not an accepted response.\n```".format(msg))
+            first_line = "'{}' is not an accepted response.\n".format(msg)
 
 @client.command(aliases=aliases_dict['clearfile'])
 async def clearfile(ctx):
-        await ctx.send("```bash\nAre you sure you would like to remove all Entries from the list of Entries?\n```")
-        
+        first_line = "Are you sure you would like to remove all Entries from the list of Entries?\n"
         confirming = True
         while confirming:
-            await ctx.send("```ini\nEnter either [yes] or [no]\n```")
+            await ctx.send("```ini\n{}Enter either [yes] or [no]\n```".format(first_line))
             try:
                 reply = await client.wait_for('message', timeout=30.0)
                 msg = reply.content.lower()
@@ -236,24 +237,24 @@ async def clearfile(ctx):
             if msg == 'y' or msg == 'yes' or msg == 'yep' or msg == 'yeah' or msg == 'ye':
                 confirming = False
                 await userEntries.clearFile(ctx)
-            elif msg == 'n' or msg == 'no' or msg == 'nope' or msg == 'nah':
+            elif msg == 'n' or msg == 'no' or msg == 'nope' or msg == 'nah' or msg == 'negatory':
                 confirming = False
                 await ctx.send("```bash\nList of entries not modified.\n```")
                 return
             else:
-                await ctx.send("```bash\n'{}' is not an accepted response.\n```".format(msg))
+                first_line = "'{}' is not an accepted response.\n".format(msg)
 
 @client.command(aliases=aliases_dict['resetfile'])
 async def resetfile(ctx):
-    await userEntries.resetfile(ctx)
+    await userEntries.resetFile(ctx)
 
 @client.command(aliases=aliases_dict['sortfile'])
 async def sortfile(ctx):
-    await randomizer.sortfile(ctx)
+    await userEntries.sortFile(ctx)
 
 @client.command(aliases=aliases_dict['cleanfile'])
 async def cleanfile(ctx):
-    await randomizer.cleanfile(ctx)
+    await userEntries.cleanFile(ctx)
 
 """
 Misc Commands

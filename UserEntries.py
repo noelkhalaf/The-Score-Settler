@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from inspect import currentframe
+import traceback
 from random import choice
 import discord
 
@@ -19,21 +19,24 @@ class UserEntries:
                         )""")
             self.conn.commit()
         except Exception as e:
-            print('Error ('+currentframe().frameinfo.f_back.f_lineno+'): ', e)
+            tb = traceback.format_exc()
+            print('Error ({}): {}'.format(tb.split("\n")[-2], e))
 
     async def createNewUser(self, ctx, entries=""):
         """
         Creates a new row in the DB for the user if it's not already there
         Uses entries_original.txt as a default list of entries
-        """ 
+        """
         try:
             self.c.execute("INSERT INTO users (user_id, display_name, username, discriminator, server, entries) VALUES (?,?,?,?,?,?)",
                         (self.getUserId(ctx), self.getDisplayName(ctx), self.getUsername(ctx), self.getDiscriminator(ctx), self.getServerName(ctx), entries))
             self.conn.commit()
             await ctx.send("```ini\nSuccessfully created your personal Entries file {}!\n```".format(self.getDisplayName(ctx)))
-        except Exception as e:
-            print('Error ('+str(currentframe().frameinfo.f_back.f_lineno)+'): ', e)
+        except sqlite3.IntegrityError as ie:
             await ctx.send("```ini\nYour personal Entries file has already been made {}.\n```".format(self.getDisplayName(ctx)))
+        except Exception as e:
+            tb = traceback.format_exc()
+            print('Error ({}): {}'.format(tb.split("\n")[-2], e))
 
     async def entries(self, ctx, num):
         """
@@ -56,7 +59,7 @@ class UserEntries:
         os.remove(f"textfiles/{user_id}.txt")
 
         if await self.isFileEmpty(ctx, entries): return
-        entries_names = [entry[:-1].strip() if entry[-1:] == "\n" else entry.strip() for entry in entries if entry.strip() != "\n"]
+        entries_names = [entry[:-1].strip() if entry[-1:] == "\n" else entry.strip() for entry in entries if entry.strip() != "\n" and entry.strip() != ""]
         for i in range(num):
             await ctx.send("```ini\nYou got [{}]!\n```".format(choice(entries_names)))
 
@@ -80,7 +83,7 @@ class UserEntries:
 
         with open(f"textfiles/{user_id}.txt", "r+") as f:
             old_entries = f.readlines()
-            old_entries = [entry.lower().strip() for entry in old_entries if entry.strip() != "\n"]
+            old_entries = [entry.lower().strip() for entry in old_entries if entry.strip() != "\n" and entry.strip() != ""]
             
             if len(old_entries) > 0:
                 if not old_entries[-1].endswith("\n"):
@@ -100,7 +103,8 @@ class UserEntries:
         try:
             self.c.execute("UPDATE users SET entries=? WHERE user_id=?", (new_entries, user_id))
         except Exception as e:
-            print('Error ('+str(currentframe().frameinfo.f_back.f_lineno)+'): ', e)
+            tb = traceback.format_exc()
+            print('Error ({}): {}'.format(tb.split("\n")[-2], e))
         self.conn.commit()
 
     async def removeEntries(self, ctx, args):
@@ -122,17 +126,19 @@ class UserEntries:
 
         with open(f"textfiles/{user_id}.txt", "r") as f:
             old_entries = f.readlines()
-            new_entries = old_entries
             if await self.isFileEmpty(ctx, old_entries): return
-            old_entries = [entry[:-1].strip() if entry[-1:] == "\n" else entry.strip() for entry in old_entries if entry.strip() != "\n"]
+            old_entries = [entry[:-1].strip() if entry[-1:] == "\n" else entry.strip() for entry in old_entries if entry.strip() != "\n" and entry.strip() != ""]
+            new_entries = old_entries
+            old_entries_lower = [entry.lower() for entry in old_entries]
             for arg in args:
-                if arg.lower().strip() not in old_entries.lower():
+                arg_lower = arg.lower().strip()
+                if arg_lower not in old_entries_lower:
                     await ctx.send("```ini\nEntry [{}] is not in the list of Entries\n```".format(arg))
                     continue
                 count = 0
-                for entry in old_entries:
-                    if entry.lower() == arg.lower().strip():
-                        new_entries.remove(entry)
+                for old_entry in old_entries:
+                    if old_entry.lower() == arg_lower:
+                        new_entries.remove(old_entry)
                         count += 1
                 if count > 0:
                     await ctx.send("```ini\nSuccessfully removed {} instance(s) of [{}] from Entries!\n```".format(count,arg))
@@ -142,7 +148,8 @@ class UserEntries:
             new_entries_str = "\n".join(new_entries) + "\n"
             self.c.execute("UPDATE users SET entries=? WHERE user_id=?", (new_entries_str, user_id))
         except Exception as e:
-            print('Error ('+str(currentframe().frameinfo.f_back.f_lineno)+'): ', e)
+            tb = traceback.format_exc()
+            print('Error ({}): {}'.format(tb.split("\n")[-2], e))
         self.conn.commit()
 
     async def getFile(self, ctx):
@@ -172,17 +179,19 @@ class UserEntries:
         """ 
         user_id = self.getUserId(ctx)
         result = self.c.execute("SELECT * FROM users WHERE user_id=?", (user_id,)).fetchone()
+        new_data = await file.read()
+        new_data = new_data.decode('ascii').replace("\r", "")
 
         if not result:
-            await self.createNewUser(ctx, file.read())
+            await self.createNewUser(ctx, new_data)
             await ctx.send("```ini\nEntries updated successfully!\n```")
             return
-
-        new_data = file.read()
+            
         try:
             self.c.execute("UPDATE users SET entries=? WHERE user_id=?", (new_data, user_id))
         except Exception as e:
-            print('Error ('+str(currentframe().frameinfo.f_back.f_lineno)+'): ', e)
+            tb = traceback.format_exc()
+            print('Error ({}): {}'.format(tb.split("\n")[-2], e))
         self.conn.commit()
         await ctx.send("```ini\nEntries updated successfully!\n```")
 
@@ -237,7 +246,7 @@ class UserEntries:
         os.remove(f"textfiles/{user_id}.txt")
 
         if await self.isFileEmpty(ctx, entries): return
-        new_entries = [entry.strip()+"\n" if entry[-1].strip() !="\n" else entry.strip() for entry in entries if entry.strip() != "\n"]
+        new_entries = [entry.strip()+"\n" if entry[-1].strip() !="\n" else entry.strip() for entry in entries if entry.strip() != "\n"  and entry.strip() != ""]
         new_entries.sort(key=str.lower)
         new_entries_str = "\n".join(new_entries) + "\n"
         self.c.execute("UPDATE users SET entries=? WHERE user_id=?", (new_entries_str, user_id))
@@ -263,16 +272,16 @@ class UserEntries:
         os.remove(f"textfiles/{user_id}.txt")
 
         if await self.isFileEmpty(ctx, entries): return
-        entries = [entry.strip()+"\n" if entry[-1].strip() !="\n" else entry.strip() for entry in entries if entry.strip() != "\n"]
+        entries = [entry.strip()+"\n" if entry[-1].strip() !="\n" else entry.strip() for entry in entries if entry.strip() != "\n" and entry.strip() != ""]
         new_entries = list(dict.fromkeys(entries))
-        new_entries_str = "\n".join(new_entries) + "\n"
+        new_entries_str = "".join(new_entries)
         self.c.execute("UPDATE users SET entries=? WHERE user_id=?", (new_entries_str, user_id))
 
         numdups = len(entries) - len(new_entries)
         if numdups == 0:
-            await ctx.send("```ini\nNo duplicates in personal Entries to remove.\n```")
+            await ctx.send("```ini\nEntries successfully cleaned!\nNo duplicates in personal Entries to remove.\n```")
         else:
-            await ctx.send("```ini\n[{}] duplicates in Entries removed successfully {}!\n```".format(numdups, self.getDisplayName(ctx)))
+            await ctx.send("```ini\nEntries successfully cleaned!\n[{}] duplicates in Entries removed successfully {}!\n```".format(numdups, self.getDisplayName(ctx)))
 
     def getUserId(self, ctx):
         return ctx.author.id
@@ -294,7 +303,7 @@ class UserEntries:
             return f.read()
 
     async def isFileEmpty(self, ctx, entries):
-        clean_entries = [entry for entry in entries if entry.strip() != "\n"]
+        clean_entries = [entry for entry in entries if entry.strip() != "\n" and entry.strip() != ""]
         if not clean_entries:
             await ctx.send("```ini\nThere are no entries to choose from. Use '.addentry <entry1>/<entry2>/...' or '.setfile <file.txt>' to add entries!\n```")
             return True
