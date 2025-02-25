@@ -305,6 +305,6 @@ class UserEntries:
     async def isFileEmpty(self, ctx, entries):
         clean_entries = [entry for entry in entries if entry.strip() != "\n" and entry.strip() != ""]
         if not clean_entries:
-            await ctx.send("```ini\nThere are no entries to choose from. Use '.addentry <entry1>/<entry2>/...' or '.setfile <file.txt>' to add entries!\n```")
+            await ctx.send("```ini\nThere are no entries to choose from. Use '.addentries \"<entry1>\" \"<entry2>\" ...' or '.setfile <file.txt>' to add entries!\n```")
             return True
         return False

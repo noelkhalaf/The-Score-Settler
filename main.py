@@ -34,8 +34,8 @@ aliases_dict = {
     'new' : ['newfile', 'create', 'createfile', 'account'],
     'entries' : ['entry','prompt'],
     'resetfile' : ['reset', 'takemeback', 'goodoldays'],
-    'getfile' : ['get', 'file', 'fetch', 'gimme', 'handitover'],
-    'setfile' : ['set', 'changefile'],
+    'getfile' : ['get', 'getentries', 'file', 'fetch', 'gimme', 'handitover'],
+    'setfile' : ['set', 'setentries', 'changefile'],
     'sortfile' : ['alpha', 'alphabetical', 'sort', 'arrange', 'orderfile', 'order'],
     'cleanfile' : ['clean', 'filterfile', 'filter', 'duplicates', 'dup', 'dups', 'removeduplicates'],
     'clearfile' : ['clear', 'blank', 'canvas'],
@@ -91,7 +91,7 @@ Basic Commands
 
 @client.command(aliases=aliases_dict['coin'])
 async def coin(ctx, *, args):
-    choices = re.findall(r"[\"\“]([\)\(\}\{\=\-\'\w\s]+)[\"\”]", args)
+    choices = re.findall(r"[\"\“]([\)\(\}\{\=\-\'\w\s]+)[\"\”]|([\)\(\}\{\=\-\'\w]+)", args)
     if len(choices) == 2:
         await randomizer.coinChoices(ctx, choices, gifs)
         return
@@ -169,7 +169,7 @@ async def entries_error(ctx, error):
 
 @client.command(aliases=aliases_dict['addentries'])
 async def addentries(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([=-'*\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall(r"[\"\“]([\)\(\}\{\=\-\'\w\s]+)[\"\”]|([\)\(\}\{\=\-\'\w]+)", args)]
     await userEntries.addEntries(ctx, choices)
 @addentries.error
 async def addentry_error(ctx, error):
@@ -178,7 +178,7 @@ async def addentry_error(ctx, error):
 
 @client.command(aliases=aliases_dict['removeentries'])
 async def removeentries(ctx, *, args):
-    choices = [a if b == '' else b for (a,b) in re.findall("\"([=-'*\w\s]+)\"|(\w+)", args)]
+    choices = [a if b == '' else b for (a,b) in re.findall(r"[\"\“]([\)\(\}\{\=\-\'\w\s]+)[\"\”]|([\)\(\}\{\=\-\'\w]+)", args)]
     await userEntries.removeEntries(ctx, choices)
 @removeentries.error
 async def removeentry_error(ctx, error):
